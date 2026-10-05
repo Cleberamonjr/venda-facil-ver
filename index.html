@@ -38,7 +38,10 @@
   .abas button.on { color:var(--ouro); font-weight:700; }
   .loja { background:var(--pedra); color:#2B241C; min-height:100vh; }
   .loja header, .loja .abas { background:var(--pedra); color:#2B241C; border-color:#E4DCCF; }
-  .capa { padding:28px 20px 8px; }
+  .capa { padding:28px 20px 8px; position:relative; }
+  .saco { position:absolute; top:18px; right:16px; min-width:46px; height:46px; border-radius:50%; border:1px solid #E4DCCF; background:#fffdf9; color:#2B241C; font-weight:700; }
+  .gaveta { position:fixed; inset:0; background:rgba(43,36,28,.28); display:flex; align-items:flex-end; z-index:5; }
+  .gaveta .folha { width:min(430px,100%); margin:0 auto; background:var(--pedra); border-radius:18px 18px 0 0; padding:18px 16px 28px; }
   .capa h1 { font-family:Georgia, "Times New Roman", serif; font-weight:500; font-size:40px; margin:0; }
   .grade { display:grid; gap:18px; padding:8px 16px 40px; }
   .produto { background:#fffdf9; border-radius:18px; overflow:hidden; box-shadow:0 1px 0 rgba(43,36,28,.04); }
@@ -74,6 +77,7 @@ let e = ler();
 let tela = "inicio";
 let foto = "";
 let carrinho = {};
+let sacoAberto = false;
 const cliente = new URLSearchParams(location.search).get("loja") === "1";
 const brl = (n) => Number(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const salvar = () => { localStorage.setItem(chave, JSON.stringify(e)); desenhar(); };
@@ -155,15 +159,19 @@ function dadosLoja() {
     <button class="acao">Salvar loja</button></form>
     <a id="link-loja" class="fantasma" style="display:grid;place-items:center;text-decoration:none" href="https://wa.me/?text=${encodeURIComponent((e.loja.nome||"Minha loja") + "\n" + link)}">Mandar o link</a>${vitrine}`;
 }
+function itensSaco() { return recentes().filter(p => carrinho[p.id]); }
+function totalSaco() { return itensSaco().reduce((s,p)=>s+p.venda*carrinho[p.id],0); }
 function vistaCliente() {
   const cor = e.loja.cor || "#8C734A";
-  return `<div class="capa" style="border-top:8px solid ${cor}"><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${cor}">${e.loja.nome || "Loja"}</div><h1 style="color:${cor}">${e.loja.nome || "Loja"}</h1><p>${e.loja.endereco || "Escolha e mande o pedido."}</p>${e.loja.zap ? `<p>WhatsApp ${e.loja.zap}</p>` : ""}</div>
+  const qtd = Object.values(carrinho).reduce((s,n)=>s+n,0);
+  const gaveta = sacoAberto ? `<div class="gaveta" id="fechar-saco"><div class="folha"><b>Seu carrinho</b>${itensSaco().map(p=>`<div class="qtd" style="justify-content:space-between;margin:12px 0"><span>${p.nome}</span><span><button data-menos="${p.id}">−</button> ${carrinho[p.id]} <button data-mais="${p.id}">+</button></span></div>`).join("") || "<p>Nenhuma peça ainda.</p>"}<div class="preco" style="color:${cor}">${brl(totalSaco())}</div><button class="acao" id="pedir" style="background:${cor}">Garantir as minhas peças</button></div></div>` : "";
+  return `<div class="capa" style="border-top:8px solid ${cor}"><button class="saco" id="abrir-saco" aria-label="Carrinho">${qtd}</button><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${cor}">${e.loja.nome || "Loja"}</div><h1 style="color:${cor}">${e.loja.nome || "Loja"}</h1><p>${e.loja.endereco || "Escolha e mande o pedido."}</p>${e.loja.zap ? `<p>WhatsApp ${e.loja.zap}</p>` : ""}</div>
     <div class="grade">${recentes().map(p=>`<article class="produto">${p.foto?`<img src="${p.foto}"/>`:`<div class="vazio"></div>`}<div><b>${p.nome}</b><div style="color:#6e655b">${p.descricao||""}</div><div class="preco" style="color:${cor}">${brl(p.venda)}</div>
       <div class="qtd"><button data-menos="${p.id}">−</button><b>${carrinho[p.id]||0}</b><button data-mais="${p.id}">+</button></div></div></article>`).join("") || "<p style='padding:0 16px'>A vitrine ainda está vazia.</p>"}
-      <div style="padding:0 16px 24px"><button class="acao" id="pedir" style="background:${cor}">Enviar pedido</button>
+      <div style="padding:0 16px 24px"><button class="acao" id="pedir" style="background:${cor}">Garantir as minhas peças</button>
       ${e.loja.pix ? `<p>Pix: ${e.loja.pix}</p>` : ""}
       ${e.loja.zap ? `<p>WhatsApp: ${e.loja.zap}</p>` : ""}
-      ${e.pedidos.map(p=>`<article class="pedido"><b>Pedido</b><div>${brl(p.total)} · ${p.pago?"Pago":"Não pago"}</div><button class="fantasma" data-pago="${p.id}" data-v="${p.pago?0:1}">${p.pago?"Marcar não pago":"Já paguei"}</button></article>`).join("")}</div></div>`;
+      ${e.pedidos.map(p=>`<article class="pedido"><b>Pedido</b><div>${brl(p.total)} · ${p.pago?"Pago":"Não pago"}</div><button class="fantasma" data-pago="${p.id}" data-v="${p.pago?0:1}">${p.pago?"Marcar não pago":"Já paguei"}</button></article>`).join("")}</div></div>${gaveta}`;
 }
 function ligar() {
   document.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { tela = b.dataset.t; desenhar(); });
@@ -183,8 +191,12 @@ function ligar() {
   }
   document.querySelectorAll("[data-mais]").forEach(b => b.onclick = () => { carrinho[b.dataset.mais]=(carrinho[b.dataset.mais]||0)+1; desenhar(); });
   document.querySelectorAll("[data-menos]").forEach(b => b.onclick = () => { carrinho[b.dataset.menos]=Math.max(0,(carrinho[b.dataset.menos]||0)-1); desenhar(); });
+  const abrir = document.getElementById("abrir-saco");
+  if (abrir) abrir.onclick = () => { sacoAberto = true; desenhar(); };
+  const fechar = document.getElementById("fechar-saco");
+  if (fechar) fechar.onclick = (ev) => { if (ev.target.id === "fechar-saco") { sacoAberto = false; desenhar(); } };
   const pedir = document.getElementById("pedir");
-  if (pedir) pedir.onclick = () => { const itens = recentes().filter(p=>carrinho[p.id]); if (!itens.length) return; e.pedidos.unshift({ id:Date.now(), cliente:"Cliente da vitrine", total:itens.reduce((s,p)=>s+p.venda*carrinho[p.id],0), pago:false }); carrinho={}; salvar(); };
+  if (pedir) pedir.onclick = () => { if (!itensSaco().length) { sacoAberto = true; desenhar(); return; } e.pedidos.unshift({ id:Date.now(), cliente:"Cliente da vitrine", total:totalSaco(), pago:false }); carrinho={}; sacoAberto=false; salvar(); };
   document.querySelectorAll("[data-pago]").forEach(b => b.onclick = () => { e.pedidos = e.pedidos.map(p => p.id===Number(b.dataset.pago)?{...p,pago:b.dataset.v==="1"}:p); salvar(); });
 }
 desenhar();
