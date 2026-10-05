@@ -130,8 +130,15 @@ function painel() {
     <h2 style="font-size:18px;margin:22px 0 8px">Quem falta pagar</h2>
     ${devedores.length ? devedores.map(p=>`<div class="num"><b>${p.cliente}</b><span>${brl(p.total)}</span></div>`).join("") : `<p class="sub">Ninguém ficou devendo.</p>`}`;
 }
+function lojaAtual() {
+  const form = document.getElementById("loja");
+  if (!form) return e.loja;
+  const fd = new FormData(form);
+  return { nome: fd.get("nome") || "", pix: fd.get("pix") || "", cor: fd.get("cor") || "#8C734A", zap: fd.get("zap") || "", endereco: fd.get("endereco") || "" };
+}
 function linkDaLoja() {
-  const pacote = { loja: e.loja, pecas: recentes().map(p => ({ id:p.id, nome:p.nome, descricao:p.descricao, venda:p.venda, custo:p.custo, qtd:p.qtd, foto: (p.foto && p.foto.length < 120000) ? p.foto : "" })) };
+  const loja = lojaAtual();
+  const pacote = { loja, pecas: recentes().map(p => ({ id:p.id, nome:p.nome, descricao:p.descricao, venda:p.venda, custo:p.custo, qtd:p.qtd, foto: (p.foto && p.foto.length < 80000) ? p.foto : "" })) };
   const c = btoa(unescape(encodeURIComponent(JSON.stringify(pacote))));
   return location.origin + location.pathname + "?loja=1&c=" + encodeURIComponent(c);
 }
@@ -141,15 +148,16 @@ function dadosLoja() {
   return `<h1>Sua loja</h1><p class="sub">${recentes().length} peça(s) do estoque, da mais recente à mais antiga.</p>
     <form id="loja"><label class="campo"><span>Nome da loja</span><input name="nome" value="${e.loja.nome}" required></label>
     <label class="campo"><span>Chave Pix</span><input name="pix" value="${e.loja.pix}" placeholder="Opcional"></label>
-    <label class="campo"><span>Cor que combina com o off-white</span><input name="cor" type="color" value="${e.loja.cor||"#8C734A"}"></label>
+    <label class="campo"><span>Cor que combina com o off-white</span><input name="cor" id="cor" type="color" value="${e.loja.cor||"#8C734A"}"></label>
+    <div id="amostra" style="height:54px;border-radius:14px;background:${e.loja.cor||"#8C734A"};color:#F4F0E8;display:grid;place-items:center;margin-bottom:12px">${e.loja.nome || "Sua loja"}</div>
     <label class="campo"><span>WhatsApp</span><input name="zap" value="${e.loja.zap}" placeholder="Opcional"></label>
     <label class="campo"><span>Endereço</span><input name="endereco" value="${e.loja.endereco}" placeholder="Opcional"></label>
     <button class="acao">Salvar loja</button></form>
-    <a class="fantasma" style="display:grid;place-items:center;text-decoration:none" href="https://wa.me/?text=${encodeURIComponent((e.loja.nome||"Minha loja") + "\n" + link)}">Mandar o link</a>${vitrine}`;
+    <a id="link-loja" class="fantasma" style="display:grid;place-items:center;text-decoration:none" href="https://wa.me/?text=${encodeURIComponent((e.loja.nome||"Minha loja") + "\n" + link)}">Mandar o link</a>${vitrine}`;
 }
 function vistaCliente() {
   const cor = e.loja.cor || "#8C734A";
-  return `<div class="capa"><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${cor}">Vitrine</div><h1>${e.loja.nome || "Loja"}</h1><p>${e.loja.endereco || "Escolha e mande o pedido."}</p></div>
+  return `<div class="capa" style="border-top:8px solid ${cor}"><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${cor}">${e.loja.nome || "Loja"}</div><h1 style="color:${cor}">${e.loja.nome || "Loja"}</h1><p>${e.loja.endereco || "Escolha e mande o pedido."}</p>${e.loja.zap ? `<p>WhatsApp ${e.loja.zap}</p>` : ""}</div>
     <div class="grade">${recentes().map(p=>`<article class="produto">${p.foto?`<img src="${p.foto}"/>`:`<div class="vazio"></div>`}<div><b>${p.nome}</b><div style="color:#6e655b">${p.descricao||""}</div><div class="preco" style="color:${cor}">${brl(p.venda)}</div>
       <div class="qtd"><button data-menos="${p.id}">−</button><b>${carrinho[p.id]||0}</b><button data-mais="${p.id}">+</button></div></div></article>`).join("") || "<p style='padding:0 16px'>A vitrine ainda está vazia.</p>"}
       <div style="padding:0 16px 24px"><button class="acao" id="pedir" style="background:${cor}">Enviar pedido</button>
@@ -168,7 +176,11 @@ function ligar() {
   const peca = document.getElementById("peca");
   if (peca) peca.onsubmit = (ev) => { ev.preventDefault(); const fd = new FormData(peca); e.pecas.push({ id:Date.now(), nome:fd.get("nome"), descricao:fd.get("descricao"), custo:Number(String(fd.get("custo")).replace(",",".")), venda:Number(String(fd.get("venda")).replace(",",".")), qtd:1, foto }); foto=""; tela="pecas"; salvar(); };
   const loja = document.getElementById("loja");
-  if (loja) loja.onsubmit = (ev) => { ev.preventDefault(); const fd = new FormData(loja); e.loja = { nome:fd.get("nome"), pix:fd.get("pix"), cor:fd.get("cor"), zap:fd.get("zap"), endereco:fd.get("endereco") }; salvar(); };
+  if (loja) {
+    const aplicar = () => { e.loja = lojaAtual(); const amostra = document.getElementById("amostra"); if (amostra) { amostra.style.background = e.loja.cor; amostra.textContent = e.loja.nome || "Sua loja"; } const link = document.getElementById("link-loja"); if (link) link.href = "https://wa.me/?text=" + encodeURIComponent((e.loja.nome || "Minha loja") + "\n" + linkDaLoja()); };
+    loja.oninput = aplicar;
+    loja.onsubmit = (ev) => { ev.preventDefault(); aplicar(); salvar(); };
+  }
   document.querySelectorAll("[data-mais]").forEach(b => b.onclick = () => { carrinho[b.dataset.mais]=(carrinho[b.dataset.mais]||0)+1; desenhar(); });
   document.querySelectorAll("[data-menos]").forEach(b => b.onclick = () => { carrinho[b.dataset.menos]=Math.max(0,(carrinho[b.dataset.menos]||0)-1); desenhar(); });
   const pedir = document.getElementById("pedir");
