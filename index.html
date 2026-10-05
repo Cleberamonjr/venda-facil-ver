@@ -39,7 +39,8 @@
   .loja { background:var(--pedra); color:#2B241C; min-height:100vh; }
   .loja header, .loja .abas { background:var(--pedra); color:#2B241C; border-color:#E4DCCF; }
   .capa { padding:28px 20px 8px; position:relative; }
-  .saco { position:absolute; top:18px; right:16px; min-width:46px; height:46px; border-radius:50%; border:1px solid #E4DCCF; background:#fffdf9; color:#2B241C; font-weight:700; }
+  .saco { position:absolute; top:18px; right:16px; width:44px; height:44px; border:0; background:transparent; color:#2B241C; padding:0; }
+  .saco svg { width:26px; height:26px; stroke:currentColor; fill:none; stroke-width:1.4; }
   .gaveta { position:fixed; inset:0; background:rgba(43,36,28,.28); display:flex; align-items:flex-end; z-index:5; }
   .gaveta .folha { width:min(430px,100%); margin:0 auto; background:var(--pedra); border-radius:18px 18px 0 0; padding:18px 16px 28px; }
   .capa h1 { font-family:Georgia, "Times New Roman", serif; font-weight:500; font-size:40px; margin:0; }
@@ -163,9 +164,8 @@ function itensSaco() { return recentes().filter(p => carrinho[p.id]); }
 function totalSaco() { return itensSaco().reduce((s,p)=>s+p.venda*carrinho[p.id],0); }
 function vistaCliente() {
   const cor = e.loja.cor || "#8C734A";
-  const qtd = Object.values(carrinho).reduce((s,n)=>s+n,0);
-  const gaveta = sacoAberto ? `<div class="gaveta" id="fechar-saco"><div class="folha"><b>Seu carrinho</b>${itensSaco().map(p=>`<div class="qtd" style="justify-content:space-between;margin:12px 0"><span>${p.nome}</span><span><button data-menos="${p.id}">−</button> ${carrinho[p.id]} <button data-mais="${p.id}">+</button></span></div>`).join("") || "<p>Nenhuma peça ainda.</p>"}<div class="preco" style="color:${cor}">${brl(totalSaco())}</div><button class="acao" id="pedir" style="background:${cor}">Garantir as minhas peças</button></div></div>` : "";
-  return `<div class="capa" style="border-top:8px solid ${cor}"><button class="saco" id="abrir-saco" aria-label="Carrinho">${qtd}</button><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${cor}">${e.loja.nome || "Loja"}</div><h1 style="color:${cor}">${e.loja.nome || "Loja"}</h1><p>${e.loja.endereco || "Escolha e mande o pedido."}</p>${e.loja.zap ? `<p>WhatsApp ${e.loja.zap}</p>` : ""}</div>
+  const gaveta = sacoAberto ? `<div class="gaveta" id="fechar-saco"><div class="folha"><b>Seu carrinho</b>${itensSaco().map(p=>`<div class="qtd" style="justify-content:space-between;margin:12px 0"><span>${p.nome}</span><span>${brl(p.venda * carrinho[p.id])}</span></div>`).join("") || "<p>Nenhuma peça ainda.</p>"}<div class="preco" style="color:${cor}">${brl(totalSaco())}</div><button class="acao" id="pedir" style="background:${cor}">Garantir as minhas peças</button></div></div>` : "";
+  return `<div class="capa" style="border-top:8px solid ${cor}"><button class="saco" id="abrir-saco" aria-label="Carrinho"><svg viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V7a3 3 0 016 0v1"/></svg></button><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${cor}">${e.loja.nome || "Loja"}</div><h1 style="color:${cor}">${e.loja.nome || "Loja"}</h1><p>${e.loja.endereco || "Escolha e mande o pedido."}</p>${e.loja.zap ? `<p>WhatsApp ${e.loja.zap}</p>` : ""}</div>
     <div class="grade">${recentes().map(p=>`<article class="produto">${p.foto?`<img src="${p.foto}"/>`:`<div class="vazio"></div>`}<div><b>${p.nome}</b><div style="color:#6e655b">${p.descricao||""}</div><div class="preco" style="color:${cor}">${brl(p.venda)}</div>
       <div class="qtd"><button data-menos="${p.id}">−</button><b>${carrinho[p.id]||0}</b><button data-mais="${p.id}">+</button></div></div></article>`).join("") || "<p style='padding:0 16px'>A vitrine ainda está vazia.</p>"}
       <div style="padding:0 16px 24px"><button class="acao" id="pedir" style="background:${cor}">Garantir as minhas peças</button>
