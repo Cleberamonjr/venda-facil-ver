@@ -27,7 +27,7 @@
   .peca { display:flex; gap:12px; align-items:center; padding:12px 0; border-bottom:1px solid var(--linha); }
   .peca:last-child { border-bottom:0; }
   .foto { width:56px; height:56px; border-radius:12px; background:#1c335c; }
-  .abas { position:sticky; bottom:0; display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--linha); background:var(--mar); }
+  .abas { position:sticky; bottom:0; display:grid; grid-template-columns:repeat(5,1fr); border-top:1px solid var(--linha); background:var(--mar); }
   .abas button { min-height:56px; border:0; background:transparent; color:#b7c0d0; }
   .abas button.on { background:#17305C; color:var(--ouro); font-weight:700; }
   .aviso { background:#17305C; border-radius:14px; padding:12px 14px; margin:12px 0; }
@@ -43,6 +43,13 @@
   <nav class="abas" id="abas"></nav>
 </div>
 <script>
+let entrou = false;
+function entrar(){ entrou = true; atual = "inicio"; desenhar(); }
+const login = `<h1>Entrar</h1><p>Sua loja, no WhatsApp.</p>
+  <label class="campo"><span>E-mail</span><input placeholder="voce@email.com"></label>
+  <label class="campo"><span>Senha</span><input type="password" placeholder="Senha"></label>
+  <button class="acao" onclick="entrar()">Entrar</button>
+  <button class="fantasma" onclick="entrar()">Só quero conhecer</button>`;
 const telas = {
   primeira: `<h1>Cadastrar a peça</h1><p>Nome, preço e foto. O código fica para depois.</p>
     <label class="campo"><span>Nome</span><input value="Colar Riviera" readonly></label>
@@ -66,14 +73,19 @@ const telas = {
     <button class="acao">Registrar venda</button>`,
   loja: `<h1>Loja</h1><p>O link inteiro, depois da peça.</p>
     <button class="acao">Enviar no WhatsApp</button>
-    <button class="fantasma">Copiar link</button>`
+    <button class="fantasma">Copiar link</button>`,
+  painel: `<h1>Painel</h1><p>O mês, sem sair da casa.</p>
+    <div class="aviso"><b>2 peças</b><div>à venda agora</div></div>
+    <div class="aviso"><b>R$ 420</b><div>6 vendas recebidas</div></div>
+    <div class="aviso"><b>R$ 70</b><div>1 na confiança</div></div>
+    <button class="acao" onclick="ir('inicio')">Cobrar</button>`
 };
 let atual = "primeira";
 function ir(id){ atual = id; desenhar(); }
 function desenhar(){
-  document.getElementById("miolo").innerHTML = telas[atual];
-  const portas = [["inicio","Início"],["pecas","Peças"],["vender","Vender"],["loja","Loja"]];
-  document.getElementById("abas").innerHTML = (atual==="primeira"||atual==="mandar") ? "" : portas.map(([id,n])=>`<button class="${atual===id?"on":""}" onclick="ir('${id}')">${n}</button>`).join("");
+  document.getElementById("miolo").innerHTML = entrou ? telas[atual] : login;
+  const portas = [["inicio","Início"],["pecas","Peças"],["vender","Vender"],["loja","Loja"],["painel","Painel"]];
+  document.getElementById("abas").innerHTML = (!entrou || atual==="primeira"||atual==="mandar") ? "" : portas.map(([id,n])=>`<button class="${atual===id?"on":""}" onclick="ir('${id}')">${n}</button>`).join("");
 }
 desenhar();
 </script>
