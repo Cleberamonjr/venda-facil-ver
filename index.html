@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#0E1A33"/>
+<meta name="theme-color" content="#F4F0E8"/>
 <title>Venda Fácil</title>
 <style>
-  :root { --mar:#0E1A33; --mar2:#162844; --ouro:#C6A15B; --prata:#F6F1E8; --mudo:#9aa6b8; --linha:#2C4268; --pedra:#F4F0E8; }
+  :root { --mar:#F4F0E8; --mar2:#FFFDF9; --ouro:#8C3D48; --prata:#3A2428; --mudo:#8A736E; --linha:#E4D5CF; --pedra:#F4F0E8; --rosa:#C4A48A; }
   * { box-sizing:border-box; }
-  body { margin:0; background:#081226; color:var(--prata); font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; }
+  body { margin:0; background:#EFE8E0; color:var(--prata); font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; }
   button, input, textarea, select { font:inherit; font-size:16px; }
   .tel { width:min(430px,100%); min-height:100vh; margin:0 auto; background:var(--mar); }
   header { display:flex; align-items:center; justify-content:space-between; padding:18px 18px 8px; }
@@ -19,7 +19,7 @@
   main { padding:6px 18px 112px; }
   h1 { font-size:32px; line-height:1.05; letter-spacing:-.045em; font-weight:560; margin:12px 0 6px; }
   .sub { color:var(--mudo); margin:0 0 18px; line-height:1.45; }
-  .acao { min-height:50px; width:100%; border:0; border-radius:14px; background:var(--ouro); color:var(--mar); font-weight:700; }
+  .acao { min-height:50px; width:100%; border:0; border-radius:14px; background:#6E2433; color:#F4F0E8; font-weight:700; }
   .fantasma { min-height:46px; width:100%; margin-top:8px; border:1px solid var(--linha); border-radius:14px; background:transparent; color:var(--mudo); }
   .sair { width:auto; min-height:38px; padding:0 12px; margin:0; }
   .campo { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
@@ -32,10 +32,10 @@
   .lista { display:flex; flex-direction:column; gap:12px; }
   .item { display:grid; grid-template-columns:72px 1fr; gap:12px; background:var(--mar2); border:1px solid var(--linha); border-radius:16px; padding:10px; }
   .item img, .vazio { width:72px; height:72px; border-radius:12px; object-fit:cover; background:#1c335c; }
-  .ouro { color:var(--ouro); }
-  .abas { position:sticky; bottom:0; display:grid; grid-template-columns:repeat(5,1fr); border-top:1px solid var(--linha); background:rgba(14,26,51,.96); padding-bottom:env(safe-area-inset-bottom); }
+  .ouro { color:#6E2433; }
+  .abas { position:sticky; bottom:0; display:grid; grid-template-columns:repeat(5,1fr); border-top:1px solid var(--linha); background:#F4F0E8; padding-bottom:env(safe-area-inset-bottom); }
   .abas button { min-height:58px; border:0; background:transparent; color:var(--mudo); font-size:11px; }
-  .abas button.on { color:var(--ouro); font-weight:700; }
+  .abas button.on { color:#6E2433; font-weight:700; }
   .loja { background:var(--pedra); color:#2B241C; min-height:100vh; }
   .loja header, .loja .abas { background:var(--pedra); color:#2B241C; border-color:#E4DCCF; }
   .capa { padding:28px 20px 8px; position:relative; }
@@ -59,7 +59,7 @@
 <div class="tel" id="app"></div>
 <script>
 const chave = "vf-loja";
-const zero = () => ({ sessao:false, loja:{ nome:"", pix:"", cor:"#8C734A", zap:"", endereco:"" }, pecas:[], pedidos:[] });
+const zero = () => ({ sessao:false, loja:{ nome:"", pix:"", cor:"#6E2433", zap:"", endereco:"" }, pecas:[], pedidos:[] });
 function ler() {
   const atual = JSON.parse(localStorage.getItem(chave) || "null") || zero();
   const antiga = JSON.parse(localStorage.getItem("vf-casa") || "null");
@@ -139,7 +139,7 @@ function lojaAtual() {
   const form = document.getElementById("loja");
   if (!form) return e.loja;
   const fd = new FormData(form);
-  return { nome: fd.get("nome") || "", pix: fd.get("pix") || "", cor: fd.get("cor") || "#8C734A", zap: fd.get("zap") || "", endereco: fd.get("endereco") || "" };
+  return { nome: fd.get("nome") || "", pix: fd.get("pix") || "", cor: fd.get("cor") || "#6E2433", zap: fd.get("zap") || "", endereco: fd.get("endereco") || "" };
 }
 function linkDaLoja() {
   const loja = lojaAtual();
@@ -153,8 +153,8 @@ function dadosLoja() {
   return `<h1>Sua loja</h1><p class="sub">${recentes().length} peça(s) do estoque, da mais recente à mais antiga.</p>
     <form id="loja"><label class="campo"><span>Nome da loja</span><input name="nome" value="${e.loja.nome}" required></label>
     <label class="campo"><span>Chave Pix</span><input name="pix" value="${e.loja.pix}" placeholder="Opcional"></label>
-    <label class="campo"><span>Cor que combina com o off-white</span><input name="cor" id="cor" type="color" value="${e.loja.cor||"#8C734A"}"></label>
-    <div id="amostra" style="height:54px;border-radius:14px;background:${e.loja.cor||"#8C734A"};color:#F4F0E8;display:grid;place-items:center;margin-bottom:12px">${e.loja.nome || "Sua loja"}</div>
+    <label class="campo"><span>Cor que combina com o off-white</span><input name="cor" id="cor" type="color" value="${e.loja.cor||"#6E2433"}"></label>
+    <div id="amostra" style="height:54px;border-radius:14px;background:${e.loja.cor||"#6E2433"};color:#F4F0E8;display:grid;place-items:center;margin-bottom:12px">${e.loja.nome || "Sua loja"}</div>
     <label class="campo"><span>WhatsApp</span><input name="zap" value="${e.loja.zap}" placeholder="Opcional"></label>
     <label class="campo"><span>Endereço</span><input name="endereco" value="${e.loja.endereco}" placeholder="Opcional"></label>
     <button class="acao">Salvar loja</button></form>
@@ -163,7 +163,7 @@ function dadosLoja() {
 function itensSaco() { return recentes().filter(p => carrinho[p.id]); }
 function totalSaco() { return itensSaco().reduce((s,p)=>s+p.venda*carrinho[p.id],0); }
 function vistaCliente() {
-  const cor = e.loja.cor || "#8C734A";
+  const cor = e.loja.cor || "#6E2433";
   const gaveta = sacoAberto ? `<div class="gaveta" id="fechar-saco"><div class="folha"><b>Seu carrinho</b>${itensSaco().map(p=>`<div class="qtd" style="justify-content:space-between;margin:12px 0"><span>${p.nome}</span><span>${brl(p.venda * carrinho[p.id])}</span></div>`).join("") || "<p>Nenhuma peça ainda.</p>"}<div class="preco" style="color:${cor}">${brl(totalSaco())}</div><button class="acao" id="pedir" style="background:${cor}">Garantir as minhas peças</button></div></div>` : "";
   return `<div class="capa" style="border-top:8px solid ${cor}"><button class="saco" id="abrir-saco" aria-label="Carrinho"><svg viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V7a3 3 0 016 0v1"/></svg></button><div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${cor}">${e.loja.nome || "Loja"}</div><h1 style="color:${cor}">${e.loja.nome || "Loja"}</h1><p>${e.loja.endereco || "Escolha e mande o pedido."}</p>${e.loja.zap ? `<p>WhatsApp ${e.loja.zap}</p>` : ""}</div>
     <div class="grade">${recentes().map(p=>`<article class="produto">${p.foto?`<img src="${p.foto}"/>`:`<div class="vazio"></div>`}<div><b>${p.nome}</b><div style="color:#6e655b">${p.descricao||""}</div><div class="preco" style="color:${cor}">${brl(p.venda)}</div>
