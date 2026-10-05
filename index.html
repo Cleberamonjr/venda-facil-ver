@@ -56,7 +56,21 @@
 <script>
 const chave = "vf-loja";
 const zero = () => ({ sessao:false, loja:{ nome:"", pix:"", cor:"#8C734A", zap:"", endereco:"" }, pecas:[], pedidos:[] });
-let e = JSON.parse(localStorage.getItem(chave) || "null") || zero();
+function ler() {
+  const atual = JSON.parse(localStorage.getItem(chave) || "null") || zero();
+  const antiga = JSON.parse(localStorage.getItem("vf-casa") || "null");
+  if (antiga && antiga.pecas && antiga.pecas.length && !atual.pecas.length) atual.pecas = antiga.pecas;
+  const q = new URLSearchParams(location.search).get("c");
+  if (q) {
+    try {
+      const vinda = JSON.parse(decodeURIComponent(escape(atob(q))));
+      if (vinda.loja) atual.loja = { ...atual.loja, ...vinda.loja };
+      if (vinda.pecas) atual.pecas = vinda.pecas;
+    } catch (err) {}
+  }
+  return atual;
+}
+let e = ler();
 let tela = "inicio";
 let foto = "";
 let carrinho = {};
@@ -116,16 +130,22 @@ function painel() {
     <h2 style="font-size:18px;margin:22px 0 8px">Quem falta pagar</h2>
     ${devedores.length ? devedores.map(p=>`<div class="num"><b>${p.cliente}</b><span>${brl(p.total)}</span></div>`).join("") : `<p class="sub">Ninguém ficou devendo.</p>`}`;
 }
+function linkDaLoja() {
+  const pacote = { loja: e.loja, pecas: recentes().map(p => ({ id:p.id, nome:p.nome, descricao:p.descricao, venda:p.venda, custo:p.custo, qtd:p.qtd, foto: (p.foto && p.foto.length < 120000) ? p.foto : "" })) };
+  const c = btoa(unescape(encodeURIComponent(JSON.stringify(pacote))));
+  return location.origin + location.pathname + "?loja=1&c=" + encodeURIComponent(c);
+}
 function dadosLoja() {
-  const link = location.origin + location.pathname + "?loja=1";
-  return `<h1>Sua loja</h1><p class="sub">O que a cliente vê no link.</p>
+  const link = linkDaLoja();
+  const vitrine = recentes().length ? `<h2 style="font-size:18px;margin:22px 0 8px">Na vitrine agora</h2><div class="lista">${recentes().map(p=>`<article class="item">${p.foto?`<img src="${p.foto}"/>`:`<div class="vazio"></div>`}<div><b>${p.nome}</b><div class="ouro">${brl(p.venda)}</div></div></article>`).join("")}</div>` : `<p class="sub">Nenhuma peça do estoque entrou na vitrine.</p>`;
+  return `<h1>Sua loja</h1><p class="sub">${recentes().length} peça(s) do estoque, da mais recente à mais antiga.</p>
     <form id="loja"><label class="campo"><span>Nome da loja</span><input name="nome" value="${e.loja.nome}" required></label>
     <label class="campo"><span>Chave Pix</span><input name="pix" value="${e.loja.pix}" placeholder="Opcional"></label>
     <label class="campo"><span>Cor que combina com o off-white</span><input name="cor" type="color" value="${e.loja.cor||"#8C734A"}"></label>
     <label class="campo"><span>WhatsApp</span><input name="zap" value="${e.loja.zap}" placeholder="Opcional"></label>
     <label class="campo"><span>Endereço</span><input name="endereco" value="${e.loja.endereco}" placeholder="Opcional"></label>
     <button class="acao">Salvar loja</button></form>
-    <a class="fantasma" style="display:grid;place-items:center;text-decoration:none" href="https://wa.me/?text=${encodeURIComponent((e.loja.nome||"Minha loja") + ": " + link)}">Mandar o link</a>`;
+    <a class="fantasma" style="display:grid;place-items:center;text-decoration:none" href="https://wa.me/?text=${encodeURIComponent((e.loja.nome||"Minha loja") + "\n" + link)}">Mandar o link</a>${vitrine}`;
 }
 function vistaCliente() {
   const cor = e.loja.cor || "#8C734A";
